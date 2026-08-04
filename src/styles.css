@@ -287,6 +287,29 @@ header.mobile-app .hero-phone img {
   margin-inline: auto;
 }
 
+/* Equal-height process step cards */
+.app-process .process-steps {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+}
+
+.app-process .process-steps > [class*="col-"] {
+  display: flex;
+}
+
+.app-process .process-steps .item {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+
+.app-process .process-steps .item p {
+  margin-bottom: 0;
+}
+
 /* Equal-height pricing cards */
 .app-price .pric-tables > .row {
   display: flex;

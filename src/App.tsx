@@ -444,7 +444,7 @@ export default function App() {
               </div>
             </div>
           </div>
-          <div className="row">
+          <div className="row process-steps">
             <div className="col-lg-4">
               <div className="item text-center md-mb50" data-reveal="up" data-reveal-delay="1">
                 <span className="icon pe-7s-cloud-download" />
