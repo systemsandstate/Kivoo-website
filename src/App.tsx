@@ -7,6 +7,8 @@ const PLAY_STORE_URL =
   "https://play.google.com/store/apps/details?id=xyz.kivoo.app";
 const CONTACT_EMAIL =
   import.meta.env.VITE_CONTACT_EMAIL || "hello@kivoo.org";
+const CONTACT_API_URL =
+  import.meta.env.VITE_CONTACT_API_URL || "/api/contact";
 
 const FEATURES = [
   {
@@ -115,7 +117,7 @@ export default function App() {
     return () => observer.disconnect();
   }, [contactSent]);
 
-  function onContactSubmit(e: FormEvent<HTMLFormElement>) {
+  async function onContactSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const form = e.currentTarget;
     const data = new FormData(form);
@@ -127,27 +129,29 @@ export default function App() {
 
     setContactBusy(true);
     setContactError(null);
-
-    // Honeypot filled — treat as success without opening mail
-    if (website) {
-      form.reset();
-      setContactSent(true);
-      setContactBusy(false);
-      return;
-    }
-
-    const subject = encodeURIComponent(`Kivoo contact from ${name}`);
-    const body = encodeURIComponent(
-      `Name: ${name}\nEmail: ${email}\n\n${message}`
-    );
-
     try {
-      window.location.href = `mailto:${CONTACT_EMAIL}?subject=${subject}&body=${body}`;
+      const res = await fetch(CONTACT_API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, message, website }),
+      });
+      const payload = (await res.json().catch(() => null)) as {
+        success?: boolean;
+        error?: { message?: string };
+      } | null;
+      if (!res.ok || !payload?.success) {
+        throw new Error(
+          payload?.error?.message ||
+            "Could not send your message. Please try again."
+        );
+      }
       form.reset();
       setContactSent(true);
-    } catch {
+    } catch (err) {
       setContactError(
-        "Could not open your email app. Please write us directly."
+        err instanceof Error
+          ? err.message
+          : "Could not send your message. Please try again."
       );
     } finally {
       setContactBusy(false);
@@ -653,8 +657,8 @@ export default function App() {
                 <div className="contact-panel text-center" data-reveal="scale" role="status">
                   <h5>Thanks for reaching out.</h5>
                   <p>
-                    Your email app should open with your message ready to send. If
-                    it didn&apos;t, write us at {CONTACT_EMAIL}.
+                    We received your message and will get back to you soon. You can
+                    also write us at {CONTACT_EMAIL}.
                   </p>
                   <button
                     type="button"
