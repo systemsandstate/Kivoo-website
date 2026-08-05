@@ -11,23 +11,23 @@ npm install
 npm run dev
 ```
 
-`npm run dev` starts Vite and the Resend contact helper (`server/contact.mjs` on port 8787). The form posts to `/api/contact` (proxied in dev).
+`npm run dev` starts Vite and the local Resend helper (`server/contact.mjs` on port 8787). The form posts to `/api/contact` (proxied in dev).
 
-## Contact (Resend)
+## Contact (Resend + Vercel)
 
-Resend cannot be called from the browser (CORS + secret key). This repo includes a tiny Node helper that holds `RESEND_API_KEY` and sends mail.
+Production uses the Vercel serverless function at [`api/contact.js`](api/contact.js). Locally, `server/contact.mjs` mirrors the same behavior.
 
 | Variable | Where | Purpose |
 |----------|--------|---------|
-| `RESEND_API_KEY` | server | Resend secret |
-| `RESEND_FROM` | server | Verified sender |
-| `CONTACT_TO` | server | Inbox for form submissions |
-| `VITE_CONTACT_API_URL` | frontend | Default `/api/contact` |
-| `VITE_CONTACT_EMAIL` | frontend | Display + mailto fallback |
+| `RESEND_API_KEY` | Vercel / `.env.local` | Resend secret (never `VITE_`) |
+| `RESEND_FROM` | Vercel / `.env.local` | Verified sender |
+| `CONTACT_TO` | Vercel / `.env.local` | Inbox for form submissions |
+| `VITE_CONTACT_API_URL` | frontend build | Default `/api/contact` |
+| `VITE_CONTACT_EMAIL` | frontend build | Display + mailto fallback |
 
-Verify your domain at [resend.com/domains](https://resend.com/domains), then set `RESEND_FROM` to an address on that domain.
+In the [Vercel project](https://vercel.com) → **Settings → Environment Variables**, add `RESEND_API_KEY`, `RESEND_FROM`, and `CONTACT_TO`, then redeploy.
 
-Production: run `npm run start:api` and reverse-proxy `/api/contact` to `127.0.0.1:8787`.
+Verify your domain at [resend.com/domains](https://resend.com/domains), then set `RESEND_FROM` to an address on that domain (until then, `Kivoo <onboarding@resend.dev>` only delivers to your Resend account email).
 
 ## Store URLs
 
@@ -42,7 +42,5 @@ VITE_PLAY_STORE_URL=https://play.google.com/store/apps/details?id=xyz.kivoo.app
 
 ```bash
 npm run build
-# from repo: npm run deploy:web  (also refreshes /app Expo build)
-# or site only:
-rsync -a --delete --filter 'P app/' --filter 'P app/***' dist/ /var/www/kivoo-site/
+git push   # Vercel auto-deploys from GitHub
 ```
